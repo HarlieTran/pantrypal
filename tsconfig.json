@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "types": ["node", "aws-lambda"],
+    "rootDir": "src",
+    "outDir": "dist-ts"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["frontend", "node_modules", "dist", "dist-ts"]
+}

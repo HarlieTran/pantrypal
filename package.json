@@ -1,0 +1,31 @@
+{
+  "name": "pantrypal-onboard-backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build:health": "esbuild src/lambdas/health-check/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/health-check/index.js",
+    "build:onboarding": "esbuild src/lambdas/onboarding-api/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/onboarding-api/index.js",
+    "build:summary": "esbuild src/lambdas/summary/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/summary/index.js",
+    "build:session-monitor": "esbuild src/lambdas/session-monitor/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/session-monitor/index.js",
+    "build:lambdas": "npm run build:health && npm run build:onboarding && npm run build:summary && npm run build:session-monitor",
+    "package:lambdas": "npm run build:lambdas && powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/package-lambdas.ps1",
+    "clean": "powershell -NoProfile -Command \"if (Test-Path dist) { Remove-Item -Recurse -Force dist }\""
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.882.0",
+    "@aws-sdk/client-dynamodb": "^3.882.0",
+    "@aws-sdk/client-secrets-manager": "^3.882.0",
+    "@aws-sdk/lib-dynamodb": "^3.882.0",
+    "bcryptjs": "^2.4.3",
+    "pg": "^8.13.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.160",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.1",
+    "@types/pg": "^8.16.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.3"
+  }
+}

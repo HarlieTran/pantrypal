@@ -116,7 +116,8 @@ input:focus {
   inset: 0;
   background-size: cover;
   background-position: center;
-  opacity: 0.08;
+  /* opacity: 0.08; */
+  opacity: 0.3;
   z-index: 0;
   pointer-events: none;
 }

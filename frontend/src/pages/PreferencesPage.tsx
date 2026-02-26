@@ -69,9 +69,6 @@ const PreferencesPage: React.FC<PreferencesPageProps> = ({
       {/* Background */}
       <div
         className='page-bg'
-        style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&q=80)'
-        }}
       />
 
       <div className='page-content' style={styles.container}>

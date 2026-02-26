@@ -52,9 +52,6 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onNavigate, updateSession }) =>
       {/* Background */}
       <div
         className='page-bg'
-        style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1200&q=80)'
-        }}
       />
 
       <div className='page-content' style={styles.container}>

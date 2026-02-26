@@ -119,9 +119,6 @@ const QuestionsPage: React.FC<QuestionsPageProps> = ({
       {/* Background */}
       <div
         className='page-bg'
-        style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1543339308-43e59d6b73a6?w=1200&q=80)'
-        }}
       />
 
       <div className='page-content' style={styles.container}>

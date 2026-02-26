@@ -37,7 +37,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       <div
         className='page-bg'
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1800&q=80)'
+          opacity: 0.5
         }}
       />
 

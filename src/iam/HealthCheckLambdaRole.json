@@ -2,13 +2,14 @@
     "Version": "2012-10-17",
     "Statement": [
         {
+            "Sid": "AllowHealthCheckLogging",
             "Effect": "Allow",
             "Action": [
                 "logs:CreateLogGroup",
                 "logs:CreateLogStream",
                 "logs:PutLogEvents"
             ],
-            "Resource": "*"
+            "Resource": "arn:aws:logs:us-east-2:175948132683:log-group:/aws/lambda/HealthCheckLambda:*"
         }
     ]
 }

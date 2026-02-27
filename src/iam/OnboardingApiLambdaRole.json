@@ -1,3 +1,10 @@
+/* For the Amazon Bedrock InvokeModel permission, a resource wildcard (*) was utilized 
+specifically to support Cross-Region Inference. Cross-region profiles dynamically route 
+prompt requests across multiple AWS regions to ensure high availability, minimize latency, 
+and prevent throttling. Because the exact regional foundation model ARN changes dynamically 
+depending on which AWS region actually processes the request, the wildcard was necessary to 
+ensure the Lambda function could successfully invoke the model regardless of the underlying 
+geographic routing. */
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -8,7 +15,7 @@
                 "logs:CreateLogStream",
                 "logs:PutLogEvents"
             ],
-            "Resource": "arn:aws:logs:*:*:*"
+            "Resource": "arn:aws:logs:us-east-2:175948132683:log-group:/aws/lambda/OnboardingApiLambda:*"
         },
         {
             "Effect": "Allow",

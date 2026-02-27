@@ -1,0 +1,27 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "arn:aws:logs:*:*:*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:GetItem",
+                "dynamodb:Query"
+            ],
+            "Resource": "arn:aws:dynamodb:us-east-2:175948132683:table/UserOnboardingProfiles"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "bedrock:InvokeModel",
+            "Resource": "*"
+        }
+    ]
+}

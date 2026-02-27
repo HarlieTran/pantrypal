@@ -1,0 +1,258 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PantryPal - AWS Architecture Diagram</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  }
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: #ffb84d;
+  }
+  .subtitle {
+    margin: 0 0 18px 0;
+    color: #94a3b8;
+    font-size: 13px;
+  }
+  .zone {
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    background: rgba(255,255,255,0.02);
+  }
+  .zone h2 {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #cbd5e1;
+  }
+  .row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+  .node {
+    flex: 1;
+    min-width: 180px;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    padding: 10px;
+    background: rgba(15,23,42,0.7);
+  }
+  .node .name {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .node .sub {
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.35;
+  }
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .chip {
+    font-size: 11px;
+    border: 1px solid #475569;
+    border-radius: 999px;
+    padding: 2px 8px;
+    color: #cbd5e1;
+  }
+  .arrow {
+    text-align: center;
+    color: #ff9900;
+    margin: 6px 0 10px;
+    font-size: 12px;
+  }
+  .bottom {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+  .foot {
+    margin-top: 14px;
+    font-size: 11px;
+    color: #64748b;
+    text-align: center;
+  }
+  .aws { border-color: #ff9900; }
+  .lambda { border-color: #f58536; }
+  .data { border-color: #3b48cc; }
+  .iam { border-color: #dd344c; }
+  .events { border-color: #10b981; }
+  .monitor { border-color: #6366f1; }
+  @media (max-width: 900px) {
+    .bottom { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>PantryPal - AWS Architecture</h1>
+  <p class="subtitle">INFO8372 Cloud Computing - Onboarding Service</p>
+
+  <div class="zone">
+    <h2>Client and Frontend</h2>
+    <div class="row">
+      <div class="node aws">
+        <div class="name">Client (Browser)</div>
+        <div class="sub">User accesses onboarding web app.</div>
+      </div>
+      <div class="node aws">
+        <div class="name">AWS Amplify (Frontend Hosting)</div>
+        <div class="sub">Hosts and serves React frontend.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">Client -> Amplify -> API Gateway</div>
+
+  <div class="zone">
+    <h2>API Layer</h2>
+    <div class="row">
+      <div class="node aws">
+        <div class="name">Amazon API Gateway</div>
+        <div class="sub">REST entry point for backend lambdas.</div>
+        <div class="chip-row">
+          <span class="chip">GET /health</span>
+          <span class="chip">POST /signup</span>
+          <span class="chip">POST /questions</span>
+          <span class="chip">POST /answer</span>
+          <span class="chip">POST /event</span>
+          <span class="chip">POST /summary</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">API Gateway -> Lambda Proxy Integrations</div>
+
+  <div class="zone">
+    <h2>Lambda Functions</h2>
+    <div class="row">
+      <div class="node lambda">
+        <div class="name">HealthCheck Lambda</div>
+        <div class="sub">Handles GET /health and status checks.</div>
+      </div>
+      <div class="node lambda">
+        <div class="name">OnboardingApi Lambda</div>
+        <div class="sub">Handles /signup, /questions, /answer, /event.</div>
+      </div>
+      <div class="node lambda">
+        <div class="name">Summary Lambda</div>
+        <div class="sub">Handles POST /summary.</div>
+      </div>
+      <div class="node lambda">
+        <div class="name">SessionMonitor Lambda</div>
+        <div class="sub">Receives scheduled heartbeat trigger.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">Lambdas interact with Data, AI, Events, IAM, Monitoring</div>
+
+  <div class="zone">
+    <h2>Data and AI</h2>
+    <div class="row">
+      <div class="node data">
+        <div class="name">Amazon RDS (PostgreSQL)</div>
+        <div class="sub">Stores user credentials for signup flow.</div>
+      </div>
+      <div class="node data">
+        <div class="name">Amazon DynamoDB</div>
+        <div class="sub">Stores onboarding profiles, questions, answers, qaPairs.</div>
+      </div>
+      <div class="node data">
+        <div class="name">Amazon Bedrock</div>
+        <div class="sub">Generates questions and summary profile.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="zone">
+      <h2>Eventing</h2>
+      <div class="node events">
+        <div class="name">Amazon EventBridge</div>
+        <div class="sub">Scheduled rule (rate: 5 minutes) triggers SessionMonitor Lambda.</div>
+      </div>
+    </div>
+
+    <div class="zone">
+      <h2>IAM Roles</h2>
+      <div class="row">
+        <div class="node iam">
+          <div class="name">HealthCheck IAM Role</div>
+          <div class="sub">CloudWatch logs permission.</div>
+        </div>
+        <div class="node iam">
+          <div class="name">OnboardingApi IAM Role</div>
+          <div class="sub">RDS, DynamoDB, Bedrock, Secrets, logs.</div>
+        </div>
+        <div class="node iam">
+          <div class="name">Summary IAM Role</div>
+          <div class="sub">DynamoDB, Bedrock, logs.</div>
+        </div>
+        <div class="node iam">
+          <div class="name">SessionMonitor IAM Role</div>
+          <div class="sub">CloudWatch logs permission.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="zone">
+      <h2>Monitoring and Secrets</h2>
+      <div class="row">
+        <div class="node monitor">
+          <div class="name">Amazon CloudWatch</div>
+          <div class="sub">Structured logs from all lambdas.</div>
+        </div>
+        <div class="node monitor">
+          <div class="name">AWS Secrets Manager</div>
+          <div class="sub">Stores DB credentials used by API lambda.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span>AWS Core: API Gateway, Amplify, EventBridge</span>
+    <span>Compute: Lambda</span>
+    <span>Data: RDS, DynamoDB</span>
+    <span>AI: Bedrock</span>
+    <span>Security: IAM, Secrets Manager</span>
+    <span>Observability: CloudWatch</span>
+  </div>
+
+  <div class="foot">Region: us-east-2</div>
+</div>
+</body>
+</html>

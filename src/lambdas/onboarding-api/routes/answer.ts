@@ -18,6 +18,8 @@ export const handleAnswer = async (body: any): Promise<APIGatewayProxyResultV2> 
       .map((q: any) => [String(q.questionId), String(q.question)])
   );
 
+  // Persist a stable QA shape by joining answer payloads with the original generated questions.
+  // If a question is missing from DynamoDB, fall back to any question text included in the request.
   const qaPairs = answers.map((a: any) => ({
     questionId: String(a.questionId),
     question: questionById.get(String(a.questionId)) ?? String(a.question ?? ''),

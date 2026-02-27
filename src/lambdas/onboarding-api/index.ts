@@ -37,6 +37,7 @@ export const handler = async (
       }
     }
 
+    // Use suffix matching so stage/base-path prefixes do not break routing.
     if (method === 'POST' && path.endsWith('/signup')) return await handleSignup(body);
     if (method === 'POST' && path.endsWith('/questions')) return await handleQuestions(body);
     if (method === 'POST' && path.endsWith('/answer')) return await handleAnswer(body);

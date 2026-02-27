@@ -8,7 +8,6 @@ const bedrockClient = new BedrockRuntimeClient({
   region: process.env.AWS_REGION ?? 'us-east-1'
 });
 
-// ─── Fetch onboarding profile from DynamoDB ───────────────
 export const fetchOnboardingProfile = async (
   userId: string,
   sessionId: string
@@ -21,11 +20,11 @@ export const fetchOnboardingProfile = async (
   return result.Item ?? null;
 };
 
-// ─── Generate cooking profile via Bedrock ─────────────────
 export const generateCookingProfile = async (
   qaPairs: any[],
   habitBackground: string
 ) => {
+  // Include the full Q&A context so the model can infer skill, constraints, and habits.
   const prompt = `You are a culinary assistant for PantryPal, an app that manages 
 pantry items and generates personalized recipes.
 
@@ -69,7 +68,8 @@ Return ONLY a valid JSON object in this exact structure, no extra text:
 
   const body = JSON.parse(new TextDecoder().decode(bedrockResponse.body));
   const outputText = body.output.message.content[0].text;
-  const cleaned = outputText.replace(/```json|```/g, '').trim();
 
+  // Some model responses are wrapped in markdown fences; strip before parsing JSON.
+  const cleaned = outputText.replace(/```json|```/g, '').trim();
   return JSON.parse(cleaned);
 };

@@ -2,7 +2,7 @@ import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { validateSummaryRequest } from './schemas/schema';
 import { fetchOnboardingProfile, generateCookingProfile } from './services/service';
 
-// Response helper
+// Shared HTTP response shape for API Gateway v2 handlers.
 const response = (statusCode: number, body: object): APIGatewayProxyResultV2 => ({
   statusCode,
   headers: {
@@ -33,25 +33,24 @@ export const handler = async (
       }
     }
 
-    // ─── Validate ─────────────────────────────────────────
+    // Fail fast on malformed requests before any DB or model call.
     const error = validateSummaryRequest(body);
     if (error) return response(400, { message: error });
 
     const { userId, sessionId } = body;
 
-    // ─── Fetch from DynamoDB ──────────────────────────────
     const profile = await fetchOnboardingProfile(userId, sessionId);
     if (!profile) {
       return response(404, { message: 'Onboarding profile not found' });
     }
 
+    // Support both stored shapes: legacy `answers` and normalized `qaPairs`.
     const qaPairs = profile.qaPairs ?? profile.answers;
     const { habitBackground } = profile;
     if (!qaPairs || qaPairs.length === 0) {
       return response(400, { message: 'No Q&A pairs found for this session' });
     }
 
-    // ─── Generate cooking profile ─────────────────────────
     const cookingProfile = await generateCookingProfile(qaPairs, habitBackground);
 
     console.log(JSON.stringify({

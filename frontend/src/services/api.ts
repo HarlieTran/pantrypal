@@ -17,7 +17,7 @@ import {
 import { Question } from '../types/api';
 
 // ── Base URL ───────────────────────────────────────────
-const BASE_URL = process.env.ONBOARDING_API_URL;
+const BASE_URL = import.meta.env.VITE_ONBOARDING_API_URL;
 
 
 // ── HTTP Client ────────────────────────────────────────

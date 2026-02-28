@@ -8,7 +8,7 @@
                 "logs:CreateLogStream",
                 "logs:PutLogEvents"
             ],
-            "Resource": "arn:aws:logs:us-east-2:175948132683:log-group:/aws/lambda/SummaryLambda:*"
+            "Resource": "arn:aws:logs:us-east-2:175948132683:log-group:/aws/lambda/SessionMonitorLambda:*"
         }
     ]
 }

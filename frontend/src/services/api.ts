@@ -17,8 +17,8 @@ import {
 import { Question } from '../types/api';
 
 // ── Base URL ───────────────────────────────────────────
-// const BASE_URL = process.env.ONBOARDING_API_URL;
-const BASE_URL = 'https://hp3gu9os8i.execute-api.us-east-2.amazonaws.com/dev';
+const BASE_URL = process.env.ONBOARDING_API_URL;
+
 
 // ── HTTP Client ────────────────────────────────────────
 const http = async <T>(

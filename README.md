@@ -1,47 +1,154 @@
+# PantryPal Onboarding
 
-# PantryPal
+PantryPal Onboarding is a full-stack onboarding system for collecting user profile data and turning it into AI-generated cooking insights.
 
-PantryPal is a full-stack application designed to manage user onboarding and health preferences through an AI-powered experience. The system utilizes a React frontend and an AWS-based serverless backend to collect user data, provide health-related questions via Amazon Bedrock, and store information in DynamoDB and PostgreSQL.
+The project includes:
+- A React + TypeScript frontend for signup and onboarding flow
+- AWS Lambda backend services for API handling, health checks, summary generation, and scheduled heartbeat monitoring
+- DynamoDB for onboarding/session data
+- PostgreSQL for user account storage
+- Amazon Bedrock for generating onboarding questions and cooking profile summaries
+
+## Architecture
+
+- Frontend (`frontend/`)
+  - Vite + React single-page app
+  - Page flow: `landing -> signup -> preferences -> questions -> summary`
+  - API integration in `frontend/src/services/api.ts`
+
+- Backend Lambdas (`src/lambdas/`)
+  - `health-check`: returns service metadata and runtime status
+  - `onboarding-api`: handles `/signup`, `/questions`, `/answer`, `/event`
+  - `summary`: handles `/summary` and generates a structured cooking profile
+  - `session-monitor`: scheduled heartbeat logger
+
+- Storage
+  - PostgreSQL table: `users` (schema in `sql/001_create_users_table.sql`)
+  - DynamoDB table: onboarding sessions and answers (`DYNAMODB_TABLE` env var)
+
+- AI
+  - Amazon Bedrock Runtime via `InvokeModel`
+  - Question generation and summary generation both use model ID from `BEDROCK_MODEL_ID`
 
 ## Repository Structure
 
-* **`frontend/`**: A React application built with TypeScript and Vite.
-* **`src/lambdas/`**: AWS Lambda functions for handling API logic including health checks, onboarding, session monitoring, and summary generation.
-* **`src/iam/`**: JSON policy definitions for the Lambda execution roles.
-* **`sql/`**: Database schema definitions for PostgreSQL.
-* **`scripts/`**: Utility scripts for packaging and deployment.
+- `frontend/`: React frontend (Vite)
+- `src/lambdas/`: Lambda source code
+- `src/iam/`: IAM policy JSON per Lambda role
+- `sql/`: SQL schema
+- `scripts/`: Build/package utilities
+- `dist/`: Compiled Lambda artifacts (generated)
 
-## Getting Started
+## Prerequisites
 
-### Frontend Setup
+- Node.js 20+
+- npm
+- AWS account/resources for Lambda + API Gateway + DynamoDB + Bedrock
+- PostgreSQL database (credentials stored in AWS Secrets Manager)
 
-1. Navigate to the `frontend` directory.
-2. Install dependencies: `npm install`.
-3. Copy `.env.example` to `.env`.
-4. Set the `VITE_API_BASE_URL` environment variable.
-5. Run the development server: `npm run dev`.
+## Local Development
 
-### Backend Setup
+### Backend
 
-1. Install dependencies at the root: `npm install`.
-2. Build the Lambda functions: `npm run build:lambdas`.
-3. (Optional) Package the functions for AWS deployment: `npm run package:lambdas`.
+Run from repository root:
 
-## Core API Endpoints
+```bash
+npm install
+npm run build:lambdas
+```
 
-The frontend interacts with the backend via the following key endpoints (Base URL: `https://hp3gu9os8i.execute-api.us-east-2.amazonaws.com/dev`):
+Optional packaging for deployment:
 
-* `GET /health`: System health check.
-* `POST /signup`: User registration.
-* `POST /questions`: Generates personalized onboarding questions based on user preferences.
-* `POST /answer`: Submits user responses for processing.
-* `POST /summary`: Generates a summary of the user's onboarding profile.
+```bash
+npm run package:lambdas
+```
 
----
+### Frontend
 
-## IAM Policy Configuration
+Run from `frontend/`:
 
-The following IAM policy is used for the **Onboarding API Lambda**. It grants necessary permissions for logging, DynamoDB access, and Amazon Bedrock invocation for AI features.
+```bash
+npm install
+npm run dev
+```
+
+Set frontend environment variable in `frontend/.env`:
+
+```env
+VITE_ONBOARDING_API_URL=https://<api-gateway-domain>/<stage>
+```
+
+## Backend Environment Variables
+
+Commonly used Lambda environment variables:
+
+- `APP_NAME`
+- `ENVIRONMENT`
+- `AWS_REGION`
+- `BEDROCK_MODEL_ID`
+- `DYNAMODB_TABLE`
+- `DB_SECRET_ARN`
+- `STUDENT_NAME` (health-check response)
+- `STUDENT_ID` (health-check response)
+
+## API Endpoints
+
+Base path is configured in API Gateway (example stage: `/dev`).
+
+- `GET /health`
+  - Returns application/runtime health payload
+- `POST /signup`
+  - Creates a user in PostgreSQL
+  - Body: `username`, `email`, `password`
+- `POST /questions`
+  - Generates onboarding questions and creates a session record in DynamoDB
+  - Body: `userId`, `dietaryPreferences`, `allergies`, `healthGoals`
+- `POST /answer`
+  - Saves user answers and normalized `qaPairs` in DynamoDB
+  - Body: `userId`, `sessionId`, `answers`, `habitBackground`
+- `POST /event`
+  - Logs onboarding analytics/event payloads
+- `POST /summary`
+  - Reads onboarding session and generates a `cookingProfile` via Bedrock
+  - Body: `userId`, `sessionId`
+
+## Build Scripts (Root)
+
+Defined in `package.json`:
+
+- `npm run build:health`
+- `npm run build:onboarding`
+- `npm run build:summary`
+- `npm run build:session-monitor`
+- `npm run build:lambdas`
+- `npm run package:lambdas`
+- `npm run clean`
+
+## IAM Policies
+
+Policy files are stored under `src/iam/`.
+
+### HealthCheckLambdaRole.json
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowHealthCheckLogging",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "arn:aws:logs:us-east-2:175948132683:log-group:/aws/lambda/HealthCheckLambda:*"
+        }
+    ]
+}
+```
+
+### OnboardingApiLambdaRole.json
 
 ```json
 {
@@ -81,5 +188,60 @@ The following IAM policy is used for the **Onboarding API Lambda**. It grants ne
         }
     ]
 }
-
 ```
+
+### SummaryLambdaRole.json
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "arn:aws:logs:us-east-2:175948132683:log-group:/aws/lambda/SessionMonitorLambda:*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:GetItem",
+                "dynamodb:Query"
+            ],
+            "Resource": "arn:aws:dynamodb:us-east-2:175948132683:table/UserOnboardingProfiles"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "bedrock:InvokeModel",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+### SessionMonitorLambdaRole.json
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "arn:aws:logs:us-east-2:175948132683:log-group:/aws/lambda/SessionMonitorLambda:*"
+        }
+    ]
+}
+```
+
+## Notes
+
+- The IAM files for Onboarding and Summary include comments in source about Bedrock cross-region inference and wildcard resource usage (`"Resource": "*"`).
+- If desired, these comments can be moved into this README as an additional security rationale section.
